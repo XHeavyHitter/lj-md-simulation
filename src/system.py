@@ -1,3 +1,4 @@
+import numpy as np
 class System:
     def __init__(self, n_cell, rho_star, dt, r_c, T_star):
         self.n_cell = n_cell
@@ -7,3 +8,16 @@ class System:
         self.T_star = T_star
         self.N = 4 * n_cell**3
         self.L_star = (self.N / rho_star)**(1/3)
+        offsets=[(0, 0, 0), (0.5, 0.5, 0), (0.5, 0, 0.5), (0, 0.5, 0.5)]
+        a=self.L_star/self.n_cell
+        positions_list=[]
+        for i in range(self.n_cell):
+            for j in range(self.n_cell):
+                for k in range(self.n_cell):
+                    corner = (i*a, j*a, k*a)
+                    for offset in offsets:
+                        x = corner[0] + offset[0]*a
+                        y = corner[1] + offset[1]*a
+                        z = corner[2] + offset[2]*a
+                        positions_list.append((x, y, z))
+        self.positions = np.array(positions_list)
