@@ -27,10 +27,11 @@ class System:
         velocities=np.random.normal(0, np.sqrt(T_star), (self.N, 3))
         velocities -= np.mean(velocities, axis=0)
         self.velocities = velocities
-    
+        self.compute_forces()
     def compute_forces(self):
         forces = np.zeros((self.N, 3))
         potential_energy = 0
+        U_shift = 4*((1/self.r_c)**12 - (1/self.r_c)**6)
         for i in range(self.N):
             for j in range(i+1, self.N):
                 displacement_ij = self.positions[i] - self.positions[j]
@@ -42,8 +43,14 @@ class System:
                     F_vector = F_scalar * direction
                     forces[i] += F_vector
                     forces[j] -= F_vector
-                    potential_energy += 4*((1/distance_ij)**12 - (1/distance_ij)**6)
+                    potential_energy += 4*((1/distance_ij)**12 - (1/distance_ij)**6) - U_shift
         self.forces=forces
         self.potential_energy=potential_energy
         return self.forces, self.potential_energy
-         
+    def step(self):
+        accelerations = self.forces.copy()
+        self.positions += self.velocities * self.dt + 0.5 * accelerations * self.dt**2
+        self.compute_forces()
+        avg_accelerations = (self.forces + accelerations) / 2
+        self.velocities += avg_accelerations * self.dt
+        self.positions %= self.L_star
